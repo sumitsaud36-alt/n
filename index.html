@@ -1,0 +1,1005 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Victor Meyer's Test — Distinguishing Alcohols</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,500&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#150f0a;
+    --paper-deep:#1d1610;
+    --ink:#f6f0e3;
+    --ink-soft:rgba(246,240,227,0.66);
+    --red:#e05a4a;
+    --red-soft:rgba(224,90,74,0.16);
+    --blue:#4a86bb;
+    --blue-soft:rgba(74,134,187,0.16);
+    --gray:#a89f8e;
+    --gray-soft:rgba(168,159,142,0.14);
+    --amber:#e0a934;
+    --line:rgba(246,240,227,0.14);
+    --line-strong:rgba(246,240,227,0.28);
+    --shadow: 0 14px 36px rgba(0,0,0,0.5);
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:
+      radial-gradient(ellipse 55% 40% at 10% 6%, rgba(224,90,74,0.14), transparent 55%),
+      radial-gradient(ellipse 50% 40% at 92% 4%, rgba(74,134,187,0.13), transparent 55%),
+      radial-gradient(ellipse 60% 45% at 50% 60%, rgba(224,169,52,0.08), transparent 60%),
+      linear-gradient(180deg, #150f0a 0%, #1a130d 40%, #17110b 100%);
+    background-attachment:fixed;
+    color:var(--ink);
+    font-family:'Inter', sans-serif;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+  ::selection{ background:var(--amber); color:#1a1108; }
+
+  h1,h2,h3,.display{ font-family:'Fraunces', serif; letter-spacing:-0.01em; }
+  .mono{ font-family:'JetBrains Mono', monospace; }
+
+  a{ color:inherit; }
+
+  /* subtle grain */
+  .grain{
+    position:fixed; inset:0; pointer-events:none; z-index:999; opacity:.06; mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  }
+
+  /* ---------- NAV ---------- */
+  nav{
+    position:sticky; top:0; z-index:100;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:16px 5vw;
+    background:rgba(21,15,10,0.72);
+    backdrop-filter:blur(14px);
+    border-bottom:1px solid var(--line);
+  }
+  .brand{ display:flex; align-items:center; gap:10px; font-weight:700; font-size:1.02rem;}
+  .brand .flask{ width:22px; height:22px; }
+  .navlinks{ display:flex; gap:28px; font-size:.86rem; font-weight:600; letter-spacing:.02em; }
+  .navlinks a{ text-decoration:none; color:var(--ink-soft); position:relative; padding-bottom:3px; transition:color .25s; }
+  .navlinks a::after{
+    content:''; position:absolute; left:0; bottom:0; width:0%; height:2px; background:var(--amber);
+    transition:width .3s ease;
+  }
+  .navlinks a:hover{ color:var(--ink); }
+  .navlinks a:hover::after{ width:100%; }
+  @media (max-width:760px){ .navlinks{ display:none; } }
+
+  section{ padding:110px 7vw; position:relative; }
+  .eyebrow{
+    display:inline-flex; align-items:center; gap:8px;
+    font-family:'JetBrains Mono',monospace; font-size:.72rem; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--ink-soft); margin-bottom:18px;
+  }
+  .eyebrow::before{ content:''; width:26px; height:1px; background:var(--line-strong); }
+
+  /* ---------- HERO ---------- */
+  .hero{
+    min-height:96vh; display:flex; align-items:center; gap:6vw; padding-top:76px;
+    position:relative; overflow:hidden;
+    background:
+      radial-gradient(ellipse 62% 52% at 12% 18%, rgba(214,79,63,0.62), transparent 62%),
+      radial-gradient(ellipse 58% 58% at 88% 12%, rgba(52,112,163,0.58), transparent 62%),
+      radial-gradient(ellipse 65% 60% at 50% 100%, rgba(214,150,42,0.42), transparent 68%),
+      linear-gradient(195deg, #150f0a 0%, #1c140d 42%, #241a10 68%, var(--paper) 100%);
+    color:var(--paper);
+  }
+  .hero::before{
+    content:''; position:absolute; inset:0; z-index:0; pointer-events:none; opacity:.9;
+    background:
+      radial-gradient(ellipse 40% 30% at 30% 40%, rgba(214,79,63,0.30), transparent 70%),
+      radial-gradient(ellipse 36% 30% at 72% 55%, rgba(52,112,163,0.28), transparent 70%);
+    animation:ambientDrift 16s ease-in-out infinite;
+    mix-blend-mode:screen;
+  }
+  @keyframes ambientDrift{ 0%,100%{ transform:translate(0,0) scale(1);} 50%{ transform:translate(-3%,3%) scale(1.08);} }
+  .hero-copy{ flex:1.15; position:relative; z-index:2; }
+  .hero .eyebrow{ color:rgba(246,240,227,0.72); }
+  .hero .eyebrow::before{ background:rgba(246,240,227,0.4); }
+  .hero h1{
+    font-size:clamp(2.6rem, 5vw, 4.3rem); line-height:1.03; margin:0 0 22px; font-weight:700;
+    color:var(--paper);
+  }
+  .hero h1 em{
+    font-style:italic; font-weight:600;
+    background:linear-gradient(100deg, #ff9a8a 0%, #ffcf7a 45%, #8fc4ff 100%);
+    background-size:220% auto; -webkit-background-clip:text; background-clip:text; color:transparent;
+    animation:gradientShift 7s ease-in-out infinite;
+    filter:drop-shadow(0 0 18px rgba(214,150,42,0.25));
+  }
+  @keyframes gradientShift{ 0%,100%{ background-position:0% center; } 50%{ background-position:100% center; } }
+  .hero p.lede{ color:rgba(246,240,227,0.74); }
+
+  .hero .btn-solid{ background:linear-gradient(120deg, var(--red), var(--amber)); color:#fff; border-color:transparent; }
+  .hero .btn-solid:hover{ transform:translateY(-3px); box-shadow:0 14px 30px rgba(214,79,63,0.35); background:linear-gradient(120deg, var(--blue), #4a86bb); }
+  .hero .btn-ghost{ background:transparent; color:var(--paper); border-color:rgba(246,240,227,0.5); }
+  .hero .btn-ghost:hover{ transform:translateY(-3px); background:rgba(246,240,227,0.14); color:var(--paper); }
+
+  /* orbiting decoration behind the tube rack */
+  .orbit-deco{
+    position:absolute; right:2vw; top:50%; transform:translateY(-50%);
+    width:min(46vw,480px); height:min(46vw,480px); pointer-events:none; z-index:1;
+  }
+  .orbit-ring{ position:absolute; border:1.4px dashed rgba(246,240,227,0.28); border-radius:50%; animation:spin linear infinite; }
+  .orbit-ring.r1{ inset:0; animation-duration:22s; }
+  .orbit-ring.r2{ inset:14%; animation-duration:16s; border-color:rgba(143,196,255,0.35); animation-direction:reverse; }
+  .orbit-ring.r3{ inset:30%; animation-duration:11s; border-color:rgba(255,154,138,0.4); }
+  @keyframes spin{ to{ transform:rotate(360deg); } }
+  .orbit-dot{ position:absolute; top:-6px; left:50%; margin-left:-6px; width:12px; height:12px; border-radius:50%; }
+  .dot-amber{ background:var(--amber); box-shadow:0 0 16px rgba(255,207,122,0.85); }
+  .dot-blue{ background:#4a86bb; box-shadow:0 0 16px rgba(143,196,255,0.8); }
+  .dot-red{ background:var(--red); box-shadow:0 0 16px rgba(255,154,138,0.8); }
+
+  .type-card, .chart-col{ will-change:transform; transform-style:preserve-3d; }
+  .hero p.lede{ font-size:1.14rem; line-height:1.65; color:var(--ink-soft); max-width:46ch; margin:0 0 34px; }
+  .cta-row{ display:flex; gap:16px; flex-wrap:wrap; }
+  .btn{
+    font-family:'Inter',sans-serif; font-weight:700; font-size:.92rem; letter-spacing:.01em;
+    padding:15px 26px; border-radius:3px; cursor:pointer; border:1.5px solid var(--ink);
+    text-decoration:none; display:inline-flex; align-items:center; gap:10px; transition:transform .25s, box-shadow .25s, background .25s, color .25s;
+  }
+  .btn-solid{ background:var(--ink); color:var(--paper); }
+  .btn-solid:hover{ transform:translateY(-3px); box-shadow:var(--shadow); background:var(--red);border-color:var(--red); }
+  .btn-ghost{ background:transparent; color:var(--ink); }
+  .btn-ghost:hover{ transform:translateY(-3px); background:var(--ink); color:var(--paper); }
+
+  /* Test tube rack (signature hero element) */
+  .rack{ flex:1; display:flex; justify-content:center; align-items:flex-end; gap:5vw; padding-bottom:10px; position:relative; z-index:2; }
+  .tube-wrap{ display:flex; flex-direction:column; align-items:center; gap:14px; }
+  .tube-label{ font-family:'JetBrains Mono',monospace; font-size:.72rem; text-align:center; color:rgba(246,240,227,0.68); }
+  .tube-label b{ display:block; color:var(--paper); font-size:.86rem; margin-bottom:2px;}
+  svg.tube{ overflow:visible; }
+  .liquid{ transform-origin:bottom; animation:wobble 3.6s ease-in-out infinite; }
+  @keyframes wobble{ 0%,100%{ transform:rotate(0deg);} 50%{ transform:rotate(0.6deg);} }
+  .bubble{ animation:rise linear infinite; opacity:0; }
+  @keyframes rise{
+    0%{ transform:translateY(0); opacity:0; }
+    15%{ opacity:.75; }
+    100%{ transform:translateY(-64px); opacity:0; }
+  }
+
+  /* ---------- INTRO ---------- */
+  .intro{
+    background:
+      radial-gradient(ellipse 50% 60% at 90% 10%, rgba(224,90,74,0.10), transparent 55%),
+      radial-gradient(ellipse 50% 60% at 5% 90%, rgba(74,134,187,0.10), transparent 55%),
+      var(--paper-deep);
+    border-top:1px solid var(--line); border-bottom:1px solid var(--line);
+  }
+  .intro-grid{ display:grid; grid-template-columns:0.9fr 1.1fr; gap:60px; align-items:center; }
+  @media(max-width:860px){ .intro-grid{ grid-template-columns:1fr; } }
+  .roh{
+    background:var(--paper); border:1px solid var(--line-strong); border-radius:6px; padding:44px 30px;
+    text-align:center; box-shadow:var(--shadow); position:relative;
+  }
+  .roh .formula{ font-family:'JetBrains Mono',monospace; font-size:3rem; font-weight:700; letter-spacing:-.02em;}
+  .roh .formula span{ color:var(--red); }
+  .roh small{ display:block; margin-top:12px; color:var(--ink-soft); font-family:'JetBrains Mono',monospace; font-size:.78rem;}
+  h2{ font-size:clamp(1.8rem,3vw,2.5rem); margin:0 0 20px; font-weight:700; }
+  .intro p{ line-height:1.75; color:var(--ink-soft); font-size:1.02rem; margin-bottom:16px; }
+  .intro strong{ color:var(--ink); }
+
+  /* ---------- TYPES ---------- */
+  .type-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:26px; margin-top:50px; }
+  @media(max-width:900px){ .type-grid{ grid-template-columns:1fr; } }
+  .type-card{
+    background:var(--paper); border:1px solid var(--line); border-radius:8px; padding:32px 26px;
+    position:relative; overflow:hidden; transition:transform .35s, box-shadow .35s;
+  }
+  .type-card:hover{ transform:translateY(-8px); box-shadow:var(--shadow); }
+  .type-card .bar{ position:absolute; top:0; left:0; right:0; height:6px; }
+  .type-card.p1 .bar{ background:var(--red); }
+  .type-card.p2 .bar{ background:var(--blue); }
+  .type-card.p3 .bar{ background:var(--gray); }
+  .type-tag{ font-family:'JetBrains Mono',monospace; font-size:.72rem; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-soft); margin-top:10px;}
+  .type-card h3{ font-size:1.5rem; margin:6px 0 10px; }
+  .type-formula{ font-family:'JetBrains Mono',monospace; background:var(--paper-deep); border:1px solid var(--line); border-radius:5px; padding:12px 14px; font-size:1rem; margin:14px 0; }
+  .type-card p{ color:var(--ink-soft); font-size:.94rem; line-height:1.6; }
+  .type-example{ font-size:.82rem; color:var(--ink-soft); font-family:'JetBrains Mono',monospace; margin-top:8px;}
+
+  /* ---------- CHART ---------- */
+  .chart-section{
+    background:
+      radial-gradient(circle at 15% 20%, rgba(224,90,74,0.14), transparent 42%),
+      radial-gradient(circle at 85% 15%, rgba(74,134,187,0.14), transparent 42%),
+      radial-gradient(circle at 50% 95%, rgba(224,169,52,0.10), transparent 50%),
+      var(--paper);
+    position:relative;
+  }
+  .chart-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:30px; margin-top:56px; }
+  @media(max-width:980px){ .chart-grid{ grid-template-columns:1fr; } }
+
+  .chart-col{
+    border-radius:14px; padding:28px 22px 32px;
+    display:flex; flex-direction:column; align-items:center; text-align:center;
+    position:relative; overflow:hidden;
+    border:1.5px solid var(--line);
+    background:var(--paper);
+    transition:transform .4s ease, box-shadow .4s ease, border-color .4s ease;
+  }
+  .chart-col::before{
+    content:''; position:absolute; inset:0; opacity:.55; z-index:0; pointer-events:none;
+    transition:opacity .4s;
+  }
+  .chart-col.c1::before{ background:linear-gradient(165deg, rgba(178,58,47,0.14) 0%, transparent 55%); }
+  .chart-col.c2::before{ background:linear-gradient(165deg, rgba(44,95,138,0.14) 0%, transparent 55%); }
+  .chart-col.c3::before{ background:linear-gradient(165deg, rgba(138,129,114,0.16) 0%, transparent 55%); }
+  .chart-col:hover{ transform:translateY(-6px); box-shadow:0 20px 44px rgba(0,0,0,0.45); }
+  .chart-col.c1:hover{ border-color:var(--red); }
+  .chart-col.c2:hover{ border-color:var(--blue); }
+  .chart-col.c3:hover{ border-color:var(--gray); }
+  .chart-col > *{ position:relative; z-index:1; }
+
+  .col-head{ margin-bottom:22px; }
+  .chart-col h4{ font-family:'Fraunces',serif; font-size:1.28rem; margin:0 0 4px; display:flex; align-items:center; justify-content:center; gap:8px;}
+  .chart-col .deg-badge{
+    display:inline-block; font-family:'JetBrains Mono',monospace; font-size:.68rem; font-weight:700;
+    padding:3px 9px; border-radius:20px; letter-spacing:.06em;
+  }
+  .chart-col.c1 h4{ color:var(--red); } .c1 .deg-badge{ background:var(--red-soft); color:var(--red); }
+  .chart-col.c2 h4{ color:var(--blue); } .c2 .deg-badge{ background:var(--blue-soft); color:var(--blue); }
+  .chart-col.c3 h4{ color:var(--gray); } .c3 .deg-badge{ background:var(--gray-soft); color:var(--gray); }
+  .chart-col .deg{ font-family:'JetBrains Mono',monospace; font-size:.82rem; color:var(--ink-soft); margin-top:8px;}
+
+  /* reaction step boxes */
+  .rxn-step{
+    width:100%; background:var(--paper); border:1.5px solid var(--line-strong); border-radius:8px;
+    padding:12px 14px; font-family:'JetBrains Mono',monospace; font-size:.92rem; font-weight:700;
+    cursor:default; position:relative; transition:transform .25s, border-color .25s, background .25s, box-shadow .25s;
+    opacity:0; transform:translateY(14px);
+  }
+  .rxn-step.in{ animation:stepIn .6s ease forwards; }
+  @keyframes stepIn{ to{ opacity:1; transform:translateY(0); } }
+  .rxn-step:hover{ transform:scale(1.05) translateY(-2px); box-shadow:0 8px 20px rgba(0,0,0,0.4); }
+  .c1 .rxn-step:hover{ border-color:var(--red); background:var(--red-soft); }
+  .c2 .rxn-step:hover{ border-color:var(--blue); background:var(--blue-soft); }
+  .c3 .rxn-step:hover{ border-color:var(--gray); background:var(--gray-soft); }
+  .rxn-step small{ display:block; font-weight:500; font-size:.72rem; color:var(--ink-soft); margin-top:3px; }
+
+  .rxn-step .ring{
+    position:absolute; top:-8px; right:-8px; width:22px; height:22px; border-radius:50%;
+    border:2px dashed var(--red); animation:pulseRing 1.8s ease-in-out infinite;
+  }
+  @keyframes pulseRing{ 0%,100%{ transform:scale(1); opacity:.9; } 50%{ transform:scale(1.22); opacity:.4; } }
+
+  .rxn-step .tip{
+    position:absolute; left:50%; bottom:calc(100% + 10px); transform:translate(-50%,6px);
+    width:230px; background:var(--ink); color:var(--paper); font-family:'Inter',sans-serif; font-weight:400;
+    font-size:.76rem; line-height:1.45; padding:11px 13px; border-radius:8px; opacity:0; pointer-events:none;
+    transition:opacity .25s, transform .25s; z-index:20; text-align:left; box-shadow:0 12px 24px rgba(0,0,0,.25);
+  }
+  .rxn-step .tip::after{ content:''; position:absolute; top:100%; left:50%; transform:translateX(-50%); border:6px solid transparent; border-top-color:var(--ink); }
+  .rxn-step:hover .tip{ opacity:1; transform:translate(-50%,0); }
+
+  /* animated reagent arrow */
+  .rxn-arrow{
+    display:flex; align-items:center; gap:10px; width:100%; margin:2px 0;
+    opacity:0; transform:translateY(10px);
+  }
+  .rxn-arrow.in{ animation:stepIn .6s ease forwards; }
+  .rxn-arrow .shaft-wrap{ flex:0 0 34px; display:flex; justify-content:center; }
+  .rxn-arrow svg{ overflow:visible; }
+  .rxn-arrow .flow{ stroke-dasharray:5 5; animation:flowDash 1.1s linear infinite; }
+  @keyframes flowDash{ to{ stroke-dashoffset:-20; } }
+  .c1 .rxn-arrow .flow, .c1 .rxn-arrow .head{ stroke:var(--red); fill:var(--red); }
+  .c2 .rxn-arrow .flow, .c2 .rxn-arrow .head{ stroke:var(--blue); fill:var(--blue); }
+  .c3 .rxn-arrow .flow, .c3 .rxn-arrow .head{ stroke:var(--gray); fill:var(--gray); }
+  .rxn-arrow .cond{ text-align:left; font-family:'JetBrains Mono',monospace; line-height:1.3; }
+  .rxn-arrow .cond .delta{ font-weight:800; font-size:.82rem; color:var(--amber); }
+  .rxn-arrow .cond .reagent{ font-size:.72rem; color:var(--ink-soft); font-weight:500; }
+
+  .result-badge{
+    width:100%; margin-top:8px; border-radius:9px; padding:18px 10px; font-family:'Fraunces',serif; font-weight:700; font-size:1.12rem;
+    display:flex; align-items:center; justify-content:center; gap:9px; border:2px solid transparent;
+    position:relative; overflow:hidden; opacity:0; transform:scale(.92); box-shadow:0 6px 18px rgba(0,0,0,0.06);
+  }
+  .result-badge.in{ animation:resultPop .7s cubic-bezier(.34,1.56,.64,1) forwards; }
+  @keyframes resultPop{ to{ opacity:1; transform:scale(1); } }
+  .result-badge::after{
+    content:''; position:absolute; inset:0; background:radial-gradient(circle at 30% 20%, rgba(255,255,255,0.5), transparent 60%);
+    animation:sheen 2.6s ease-in-out infinite;
+  }
+  @keyframes sheen{ 0%,100%{ opacity:.3; } 50%{ opacity:.8; } }
+  .result-badge.red{ background:var(--red-soft); color:var(--red); border-color:var(--red); }
+  .result-badge.blue{ background:var(--blue-soft); color:var(--blue); border-color:var(--blue); }
+  .result-badge.gray{ background:var(--gray-soft); color:var(--gray); border-color:var(--gray); }
+  .swatch{ width:17px; height:17px; border-radius:50%; display:inline-block; position:relative; z-index:1; }
+  .swatch.red{ background:var(--red); box-shadow:0 0 0 4px rgba(178,58,47,0.18); animation:swatchGlow 2s ease-in-out infinite; }
+  .swatch.blue{ background:var(--blue); box-shadow:0 0 0 4px rgba(44,95,138,0.18); animation:swatchGlow 2s ease-in-out infinite; }
+  .swatch.gray{ background:transparent; border:2px dashed var(--gray); }
+  @keyframes swatchGlow{ 0%,100%{ box-shadow:0 0 0 4px rgba(0,0,0,0.08);} 50%{ box-shadow:0 0 0 8px rgba(0,0,0,0.03);} }
+
+  /* ---------- QUIZ ---------- */
+  .quiz-section{
+    background:
+      radial-gradient(ellipse 55% 55% at 12% 8%, rgba(224,169,52,0.10), transparent 55%),
+      radial-gradient(ellipse 55% 55% at 90% 90%, rgba(74,134,187,0.10), transparent 55%),
+      var(--paper-deep);
+    border-top:1px solid var(--line);
+  }
+  .quiz-wrap{ max-width:760px; margin:50px auto 0; }
+  .quiz-progress{ display:flex; gap:8px; margin-bottom:34px; }
+  .quiz-progress .dot{ flex:1; height:5px; border-radius:3px; background:var(--line-strong); overflow:hidden; }
+  .quiz-progress .dot i{ display:block; height:100%; width:0%; background:var(--amber); transition:width .4s; }
+  .quiz-progress .dot.done i{ width:100%; background:var(--ink); }
+  .quiz-progress .dot.current i{ width:100%; }
+
+  .quiz-card{
+    background:var(--paper); border:1px solid var(--line-strong); border-radius:12px; padding:38px 34px;
+    box-shadow:var(--shadow); position:relative; min-height:360px;
+  }
+  .q-count{ font-family:'JetBrains Mono',monospace; font-size:.76rem; color:var(--ink-soft); letter-spacing:.06em; }
+  .q-text{ font-family:'Fraunces',serif; font-size:1.4rem; font-weight:600; margin:10px 0 26px; line-height:1.4; }
+  .options{ display:flex; flex-direction:column; gap:12px; }
+  .opt{
+    text-align:left; padding:15px 18px; border-radius:8px; border:1.5px solid var(--line-strong); background:var(--paper);
+    font-family:'Inter',sans-serif; font-size:.98rem; cursor:pointer; display:flex; align-items:center; gap:12px;
+    transition:border-color .2s, background .2s, transform .15s;
+  }
+  .opt:hover:not(.locked){ border-color:var(--ink); background:var(--paper-deep); transform:translateX(4px); }
+  .opt .letter{
+    width:26px; height:26px; border-radius:50%; border:1.5px solid var(--line-strong); display:flex; align-items:center; justify-content:center;
+    font-family:'JetBrains Mono',monospace; font-size:.76rem; flex-shrink:0; transition:all .2s;
+  }
+  .opt.correct{ border-color:var(--blue); background:var(--blue-soft); animation:pop .45s ease; }
+  .opt.correct .letter{ background:var(--blue); color:#fff; border-color:var(--blue); }
+  .opt.wrong{ border-color:var(--red); background:var(--red-soft); animation:shake .5s ease; }
+  .opt.wrong .letter{ background:var(--red); color:#fff; border-color:var(--red); }
+  .opt.dim{ opacity:.45; }
+  @keyframes pop{ 0%{transform:scale(1);} 40%{transform:scale(1.035);} 100%{transform:scale(1);} }
+  @keyframes shake{
+    0%,100%{ transform:translateX(0); } 20%{ transform:translateX(-8px);} 40%{ transform:translateX(7px);}
+    60%{ transform:translateX(-5px);} 80%{ transform:translateX(4px);}
+  }
+  .feedback{
+    margin-top:20px; padding:14px 16px; border-radius:8px; font-size:.9rem; line-height:1.55;
+    opacity:0; transform:translateY(8px); transition:opacity .35s, transform .35s;
+  }
+  .feedback.show{ opacity:1; transform:translateY(0); }
+  .feedback.good{ background:var(--blue-soft); color:var(--blue); border:1px solid var(--blue);}
+  .feedback.bad{ background:var(--red-soft); color:var(--red); border:1px solid var(--red);}
+  .quiz-footer{ display:flex; justify-content:space-between; align-items:center; margin-top:30px; }
+  .next-btn{
+    font-family:'Inter',sans-serif; font-weight:700; font-size:.88rem; padding:12px 22px; border-radius:6px;
+    background:var(--ink); color:var(--paper); border:none; cursor:pointer; opacity:0; pointer-events:none; transition:opacity .3s, transform .2s;
+  }
+  .next-btn.show{ opacity:1; pointer-events:all; }
+  .next-btn:hover{ transform:translateY(-2px); }
+  .score-live{ font-family:'JetBrains Mono',monospace; font-size:.85rem; color:var(--ink-soft); }
+
+  .result-screen{ text-align:center; padding:20px 10px; }
+  .result-screen .big-score{ font-family:'Fraunces',serif; font-size:4rem; font-weight:700; margin:6px 0; }
+  .result-screen p{ color:var(--ink-soft); font-size:1rem; max-width:44ch; margin:8px auto 26px; line-height:1.6; }
+  .retry-btn{
+    font-family:'Inter',sans-serif; font-weight:700; font-size:.9rem; padding:13px 26px; border-radius:6px;
+    background:transparent; border:1.5px solid var(--ink); color:var(--ink); cursor:pointer; transition:.25s;
+  }
+  .retry-btn:hover{ background:var(--ink); color:var(--paper); }
+
+  .confetti-piece{ position:fixed; top:-20px; z-index:500; border-radius:1px; pointer-events:none; }
+
+  /* ---------- SCROLL PROGRESS ---------- */
+  .scroll-progress{
+    position:fixed; top:0; left:0; height:3px; width:0%; z-index:1000;
+    background:linear-gradient(90deg, var(--red), var(--amber), var(--blue));
+    box-shadow:0 0 12px rgba(193,134,31,0.5);
+    transition:width .1s linear;
+  }
+
+  /* ---------- CURSOR GLOW ---------- */
+  .cursor-glow{
+    position:fixed; width:420px; height:420px; border-radius:50%; pointer-events:none; z-index:1;
+    background:radial-gradient(circle, rgba(193,134,31,0.10), transparent 70%);
+    transform:translate(-50%,-50%); transition:opacity .3s; opacity:0;
+  }
+  @media(hover:hover){ .cursor-glow{ opacity:1; } }
+
+  /* ---------- BACK TO TOP ---------- */
+  .to-top{
+    position:fixed; bottom:28px; right:28px; z-index:200; width:48px; height:48px; border-radius:50%;
+    background:var(--ink); color:var(--paper); border:none; cursor:pointer; font-size:1.1rem;
+    display:flex; align-items:center; justify-content:center; box-shadow:var(--shadow);
+    opacity:0; transform:translateY(16px) scale(.9); pointer-events:none; transition:opacity .3s, transform .3s, background .3s;
+  }
+  .to-top.show{ opacity:1; transform:translateY(0) scale(1); pointer-events:all; }
+  .to-top:hover{ background:var(--red); }
+
+  /* ---------- FOOTER ---------- */
+  footer{ padding:44px 7vw; border-top:1px solid var(--line); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:14px; }
+  footer .mono{ font-size:.76rem; color:var(--ink-soft); }
+
+  /* scroll reveal */
+  .reveal{ opacity:0; transform:translateY(26px); transition:opacity .7s ease, transform .7s ease; }
+  .reveal.in{ opacity:1; transform:translateY(0); }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ animation-duration:0.01ms !important; animation-iteration-count:1 !important; transition-duration:0.01ms !important; scroll-behavior:auto !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="grain"></div>
+<div class="scroll-progress" id="scrollProgress"></div>
+<div class="cursor-glow" id="cursorGlow"></div>
+<button class="to-top" id="toTop" aria-label="Back to top">↑</button>
+
+<nav>
+  <div class="brand">
+    <svg class="flask" viewBox="0 0 24 24" fill="none"><path d="M9 2h6M10 2v6.2L4.8 17a2 2 0 0 0 1.7 3h11a2 2 0 0 0 1.7-3L14 8.2V2" stroke="rgba(246,240,227,0.9)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M7.5 14.5h9" stroke="#b23a2f" stroke-width="1.6" stroke-linecap="round"/></svg>
+    Victor Meyer's Test
+  </div>
+  <div class="navlinks">
+    <a href="#intro">Alcohols</a>
+    <a href="#types">Classification</a>
+    <a href="#chart">The Test</a>
+    <a href="#quiz">Quiz</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-copy reveal">
+    <div class="eyebrow">Organic Chemistry · Functional Group Analysis</div>
+    <h1>One test.<br>Three colours.<br><em>Every alcohol confesses.</em></h1>
+    <p class="lede">Victor Meyer's test tells primary, secondary, and tertiary alcohols apart using nothing but colour — blood red, blue, or no colour at all. Below: the full mechanism, the classification it relies on, and a quiz to test what sticks.</p>
+    <div class="cta-row">
+      <a href="#chart" class="btn btn-solid">See the reaction chart →</a>
+      <a href="#quiz" class="btn btn-ghost">Jump to quiz</a>
+    </div>
+  </div>
+
+  <div class="orbit-deco" aria-hidden="true">
+    <div class="orbit-ring r1"><span class="orbit-dot dot-amber"></span></div>
+    <div class="orbit-ring r2"><span class="orbit-dot dot-blue"></span></div>
+    <div class="orbit-ring r3"><span class="orbit-dot dot-red"></span></div>
+  </div>
+
+  <div class="rack">
+    <div class="tube-wrap">
+      <svg class="tube" width="54" height="150" viewBox="0 0 54 150">
+        <path d="M8 2 H46 V95 A19 19 0 0 1 8 95 Z" fill="none" stroke="rgba(246,240,227,0.85)" stroke-width="2"/>
+        <clipPath id="clip1"><path d="M8 2 H46 V95 A19 19 0 0 1 8 95 Z"/></clipPath>
+        <g clip-path="url(#clip1)">
+          <rect class="liquid" x="6" y="58" width="42" height="60" fill="#b23a2f"/>
+          <circle class="bubble" cx="18" cy="100" r="2" fill="#e4c9c3" style="animation-duration:2.4s;animation-delay:.2s"/>
+          <circle class="bubble" cx="30" cy="100" r="1.6" fill="#e4c9c3" style="animation-duration:3s;animation-delay:1s"/>
+          <circle class="bubble" cx="24" cy="100" r="2.2" fill="#e4c9c3" style="animation-duration:2.7s;animation-delay:1.6s"/>
+        </g>
+      </svg>
+      <div class="tube-label"><b>Primary</b>Blood red</div>
+    </div>
+    <div class="tube-wrap" style="margin-bottom:18px;">
+      <svg class="tube" width="54" height="150" viewBox="0 0 54 150">
+        <path d="M8 2 H46 V95 A19 19 0 0 1 8 95 Z" fill="none" stroke="rgba(246,240,227,0.85)" stroke-width="2"/>
+        <clipPath id="clip2"><path d="M8 2 H46 V95 A19 19 0 0 1 8 95 Z"/></clipPath>
+        <g clip-path="url(#clip2)">
+          <rect class="liquid" x="6" y="50" width="42" height="68" fill="#2c5f8a"/>
+          <circle class="bubble" cx="16" cy="100" r="2" fill="#c9d9e4" style="animation-duration:2.6s;animation-delay:.6s"/>
+          <circle class="bubble" cx="34" cy="100" r="1.8" fill="#c9d9e4" style="animation-duration:2.2s;animation-delay:1.3s"/>
+        </g>
+      </svg>
+      <div class="tube-label"><b>Secondary</b>Blue</div>
+    </div>
+    <div class="tube-wrap">
+      <svg class="tube" width="54" height="150" viewBox="0 0 54 150">
+        <path d="M8 2 H46 V95 A19 19 0 0 1 8 95 Z" fill="none" stroke="rgba(246,240,227,0.85)" stroke-width="2"/>
+        <clipPath id="clip3"><path d="M8 2 H46 V95 A19 19 0 0 1 8 95 Z"/></clipPath>
+        <g clip-path="url(#clip3)">
+          <rect class="liquid" x="6" y="65" width="42" height="53" fill="#efe6d2"/>
+        </g>
+      </svg>
+      <div class="tube-label"><b>Tertiary</b>Colourless</div>
+    </div>
+  </div>
+</section>
+
+<!-- INTRO -->
+<section class="intro" id="intro">
+  <div class="intro-grid">
+    <div class="roh reveal">
+      <div class="formula">R–<span>OH</span></div>
+      <small>THE ALCOHOL FUNCTIONAL GROUP</small>
+    </div>
+    <div class="reveal">
+      <div class="eyebrow">Introduction</div>
+      <h2>What is an alcohol?</h2>
+      <p>An <strong>alcohol</strong> is an organic compound in which a hydroxyl group (–OH) is bonded to a saturated carbon atom, written generally as <strong>R–OH</strong>. That single –OH group governs almost everything about how the molecule behaves: its boiling point, its solubility in water, and — most importantly for this page — how it reacts with a specific sequence of reagents.</p>
+      <p>Not all alcohols are built the same way. The carbon carrying the –OH group can be attached to one, two, or three other carbon groups, and that difference alone is enough to change the colour a molecule turns during Victor Meyer's test. Before the test makes sense, the classification has to.</p>
+    </div>
+  </div>
+</section>
+
+<!-- TYPES -->
+<section id="types">
+  <div class="eyebrow reveal">Classification</div>
+  <h2 class="reveal">Three degrees of alcohol</h2>
+  <p class="reveal" style="max-width:60ch;color:var(--ink-soft);line-height:1.7;">Chemists classify alcohols by how many carbon groups sit on the carbon bearing the –OH. That number is called its <strong>degree</strong>, and it's the entire premise Victor Meyer built his test around.</p>
+
+  <div class="type-grid">
+    <div class="type-card p1 reveal">
+      <div class="bar"></div>
+      <div class="type-tag">1° · One R group</div>
+      <h3>Primary alcohol</h3>
+      <div class="type-formula">R–CH₂–OH</div>
+      <p>The –OH carbon is attached to only one other carbon chain (and two hydrogens). Least hindered, most reactive toward oxidation.</p>
+      <div class="type-example">e.g. ethanol, CH₃CH₂OH</div>
+    </div>
+    <div class="type-card p2 reveal">
+      <div class="bar"></div>
+      <div class="type-tag">2° · Two R groups</div>
+      <h3>Secondary alcohol</h3>
+      <div class="type-formula">R–CH(OH)–R</div>
+      <p>The –OH carbon sits between two carbon chains and one hydrogen. Intermediate reactivity and steric bulk.</p>
+      <div class="type-example">e.g. isopropanol, (CH₃)₂CHOH</div>
+    </div>
+    <div class="type-card p3 reveal">
+      <div class="bar"></div>
+      <div class="type-tag">3° · Three R groups</div>
+      <h3>Tertiary alcohol</h3>
+      <div class="type-formula">R–C(OH)(R)–R</div>
+      <p>The –OH carbon is bonded to three carbon chains and no hydrogen. Most hindered — and, as the test shows, unreactive at the final step.</p>
+      <div class="type-example">e.g. tert-butanol, (CH₃)₃COH</div>
+    </div>
+  </div>
+</section>
+
+<!-- CHART -->
+<section class="chart-section" id="chart">
+  <div class="eyebrow reveal">The Mechanism</div>
+  <h2 class="reveal">Victor Meyer's test, step by step</h2>
+  <p class="reveal" style="max-width:64ch;color:var(--ink-soft);line-height:1.7;">Each alcohol is pushed through the same four-step sequence. Primary and secondary alcohols make it all the way to a coloured end point; tertiary alcohols stall at the final step. Hover any card for the chemistry behind it.</p>
+
+  <div class="chart-grid" id="chartGrid">
+
+    <!-- Primary -->
+    <div class="chart-col c1 reveal" data-col="1">
+      <div class="col-head">
+        <h4>Primary Alcohol <span class="deg-badge">1°</span></h4>
+        <div class="deg">R–CH₂–OH</div>
+      </div>
+
+      <div class="rxn-step" data-step="0">R–CH₂–OH
+        <div class="tip">Starting material: a primary alcohol, one R group on the carbinol carbon.</div>
+      </div>
+
+      <div class="rxn-arrow" data-step="1">
+        <div class="shaft-wrap">
+          <svg width="18" height="46" viewBox="0 0 18 46">
+            <line class="flow" x1="9" y1="0" x2="9" y2="36" stroke-width="2.4"/>
+            <polygon class="head" points="3,34 15,34 9,45"/>
+          </svg>
+        </div>
+        <div class="cond"><span class="delta">Δ</span><span class="reagent">Red P₄ + I₂</span></div>
+      </div>
+
+      <div class="rxn-step" data-step="2">R–CH₂–I
+        <div class="tip">Red phosphorus generates PI₃ in situ, converting the alcohol to an alkyl iodide.</div>
+      </div>
+
+      <div class="rxn-arrow" data-step="3">
+        <div class="shaft-wrap">
+          <svg width="18" height="46" viewBox="0 0 18 46">
+            <line class="flow" x1="9" y1="0" x2="9" y2="36" stroke-width="2.4"/>
+            <polygon class="head" points="3,34 15,34 9,45"/>
+          </svg>
+        </div>
+        <div class="cond"><span class="delta">Alc.</span><span class="reagent">AgNO₂</span></div>
+      </div>
+
+      <div class="rxn-step" data-step="4">R–CH₂–NO₂ <span class="ring"></span>
+        <div class="tip">Silver nitrite displaces iodide via its nitrogen atom, giving the nitroalkane — two α-H atoms remain on this carbon.</div>
+      </div>
+
+      <div class="rxn-arrow" data-step="5">
+        <div class="shaft-wrap">
+          <svg width="18" height="46" viewBox="0 0 18 46">
+            <line class="flow" x1="9" y1="0" x2="9" y2="36" stroke-width="2.4"/>
+            <polygon class="head" points="3,34 15,34 9,45"/>
+          </svg>
+        </div>
+        <div class="cond"><span class="delta">0°C</span><span class="reagent">HNO₂</span></div>
+      </div>
+
+      <div class="rxn-step" data-step="6">Nitrolic acid <small>R–C(=NOH)–NO₂</small>
+        <div class="tip">HNO₂ substitutes one α-H, forming a nitrolic acid — this is the species that turns blood red with base.</div>
+      </div>
+
+      <div class="rxn-arrow" data-step="7">
+        <div class="shaft-wrap">
+          <svg width="18" height="46" viewBox="0 0 18 46">
+            <line class="flow" x1="9" y1="0" x2="9" y2="36" stroke-width="2.4"/>
+            <polygon class="head" points="3,34 15,34 9,45"/>
+          </svg>
+        </div>
+        <div class="cond"><span class="delta">Δ</span><span class="reagent">Aq. KOH</span></div>
+      </div>
+
+      <div class="result-badge red" data-step="8"><span class="swatch red"></span>Blood Red Colour</div>
+    </div>
+
+    <!-- Secondary -->
+    <div class="chart-col c2 reveal" data-col="2">
+      <div class="col-head">
+        <h4>Secondary Alcohol <span class="deg-badge">2°</span></h4>
+        <div class="deg">R–CH(OH)–R</div>
+      </div>
+
+      <div class="rxn-step" data-step="0">R–CH(OH)–R
+        <div class="tip">Starting material: a secondary alcohol, two R groups on the carbinol carbon.</div>
+      </div>
+
+      <div class="rxn-arrow" data-step="1">
+        <div class="shaft-wrap">
+          <svg width="18" height="46" viewBox="0 0 18 46">
+            <line class="flow" x1="9" y1="0" x2="9" y2="36" stroke-width="2.4"/>
+            <polygon class="head" points="3,34 15,34 9,45"/>
+          </svg>
+        </div>
+        <div class="cond"><span class="delta">Δ</span><span class="reagent">Red P₄ + I₂</span></div>
+      </div>
+
+      <div class="rxn-step" data-step="2">R–CHI–R
+        <div class="tip">Same halogenation, now on a carbon flanked by two R groups.</div>
+      </div>
+
+      <div class="rxn-arrow" data-step="3">
+        <div class="shaft-wrap">
+          <svg width="18" height="46" viewBox="0 0 18 46">
+            <line class="flow" x1="9" y1="0" x2="9" y2="36" stroke-width="2.4"/>
+            <polygon class="head" points="3,34 15,34 9,45"/>
+          </svg>
+        </div>
+        <div class="cond"><span class="delta">Alc.</span><span class="reagent">AgNO₂</span></div>
+      </div>
+
+      <div class="rxn-step" data-step="4">R–CH(NO₂)–R <span class="ring"></span>
+        <div class="tip">Iodide is displaced by nitrite through nitrogen, giving a secondary nitroalkane with just one α-H remaining.</div>
+      </div>
+
+      <div class="rxn-arrow" data-step="5">
+        <div class="shaft-wrap">
+          <svg width="18" height="46" viewBox="0 0 18 46">
+            <line class="flow" x1="9" y1="0" x2="9" y2="36" stroke-width="2.4"/>
+            <polygon class="head" points="3,34 15,34 9,45"/>
+          </svg>
+        </div>
+        <div class="cond"><span class="delta">0°C</span><span class="reagent">HNO₂</span></div>
+      </div>
+
+      <div class="rxn-step" data-step="6">Pseudonitrol <small>R₂C(NO₂)(N=O)</small>
+        <div class="tip">With only one α-H available, HNO₂ substitutes it directly — no O–H forms here, unlike the primary case.</div>
+      </div>
+
+      <div class="rxn-arrow" data-step="7">
+        <div class="shaft-wrap">
+          <svg width="18" height="46" viewBox="0 0 18 46">
+            <line class="flow" x1="9" y1="0" x2="9" y2="36" stroke-width="2.4"/>
+            <polygon class="head" points="3,34 15,34 9,45"/>
+          </svg>
+        </div>
+        <div class="cond"><span class="delta">Δ</span><span class="reagent">Aq. KOH</span></div>
+      </div>
+
+      <div class="result-badge blue" data-step="8"><span class="swatch blue"></span>Blue Colour</div>
+    </div>
+
+    <!-- Tertiary -->
+    <div class="chart-col c3 reveal" data-col="3">
+      <div class="col-head">
+        <h4>Tertiary Alcohol <span class="deg-badge">3°</span></h4>
+        <div class="deg">R–C(OH)(R)–R</div>
+      </div>
+
+      <div class="rxn-step" data-step="0">R–C(OH)(R)–R
+        <div class="tip">Starting material: a tertiary alcohol, three R groups on the carbinol carbon.</div>
+      </div>
+
+      <div class="rxn-arrow" data-step="1">
+        <div class="shaft-wrap">
+          <svg width="18" height="46" viewBox="0 0 18 46">
+            <line class="flow" x1="9" y1="0" x2="9" y2="36" stroke-width="2.4"/>
+            <polygon class="head" points="3,34 15,34 9,45"/>
+          </svg>
+        </div>
+        <div class="cond"><span class="delta">Δ</span><span class="reagent">Red P₄ + I₂</span></div>
+      </div>
+
+      <div class="rxn-step" data-step="2">R–CI(R)–R
+        <div class="tip">Halogenation proceeds as usual on the fully substituted carbon.</div>
+      </div>
+
+      <div class="rxn-arrow" data-step="3">
+        <div class="shaft-wrap">
+          <svg width="18" height="46" viewBox="0 0 18 46">
+            <line class="flow" x1="9" y1="0" x2="9" y2="36" stroke-width="2.4"/>
+            <polygon class="head" points="3,34 15,34 9,45"/>
+          </svg>
+        </div>
+        <div class="cond"><span class="delta">Alc.</span><span class="reagent">AgNO₂</span></div>
+      </div>
+
+      <div class="rxn-step" data-step="4">R–C(NO₂)(R)–R <span class="ring"></span>
+        <div class="tip">Nitrite still displaces iodide, but this carbon now has zero α-hydrogens left to react further.</div>
+      </div>
+
+      <div class="rxn-arrow" data-step="5">
+        <div class="shaft-wrap">
+          <svg width="18" height="46" viewBox="0 0 18 46">
+            <line class="flow" x1="9" y1="0" x2="9" y2="36" stroke-width="2.4"/>
+            <polygon class="head" points="3,34 15,34 9,45"/>
+          </svg>
+        </div>
+        <div class="cond"><span class="delta">0°C</span><span class="reagent">HNO₂</span></div>
+      </div>
+
+      <div class="rxn-step" data-step="6">No Reaction
+        <div class="tip">With no α-H available, HNO₂ has nothing to substitute — the molecule is unchanged.</div>
+      </div>
+
+      <div class="rxn-arrow" data-step="7">
+        <div class="shaft-wrap">
+          <svg width="18" height="46" viewBox="0 0 18 46">
+            <line class="flow" x1="9" y1="0" x2="9" y2="36" stroke-width="2.4"/>
+            <polygon class="head" points="3,34 15,34 9,45"/>
+          </svg>
+        </div>
+        <div class="cond"><span class="delta">Δ</span><span class="reagent">Aq. KOH</span></div>
+      </div>
+
+      <div class="result-badge gray" data-step="8"><span class="swatch gray"></span>Colourless</div>
+    </div>
+
+  </div>
+</section>
+
+<!-- QUIZ -->
+<section class="quiz-section" id="quiz">
+  <div class="eyebrow reveal">Check yourself</div>
+  <h2 class="reveal">6-question quiz</h2>
+  <p class="reveal" style="color:var(--ink-soft);">Pick an answer — you'll see immediately whether it's right.</p>
+
+  <div class="quiz-wrap reveal">
+    <div class="quiz-progress" id="progressDots"></div>
+    <div class="quiz-card" id="quizCard"></div>
+  </div>
+</section>
+
+<footer>
+  <div class="brand" style="font-size:.9rem;">Victor Meyer's Test — Interactive Notes</div>
+  <div class="mono">R–OH → R–I → R–NO₂ → colour</div>
+</footer>
+
+<script>
+// ---------- scroll progress + back to top ----------
+const scrollProgress = document.getElementById('scrollProgress');
+const toTopBtn = document.getElementById('toTop');
+window.addEventListener('scroll', ()=>{
+  const h = document.documentElement;
+  const scrolled = (h.scrollTop) / (h.scrollHeight - h.clientHeight) * 100;
+  scrollProgress.style.width = scrolled + '%';
+  toTopBtn.classList.toggle('show', h.scrollTop > 700);
+}, { passive:true });
+toTopBtn.addEventListener('click', ()=> window.scrollTo({ top:0, behavior:'smooth' }));
+
+// ---------- cursor glow ----------
+const cursorGlow = document.getElementById('cursorGlow');
+window.addEventListener('mousemove', (e)=>{
+  cursorGlow.style.left = e.clientX + 'px';
+  cursorGlow.style.top = e.clientY + 'px';
+}, { passive:true });
+
+// ---------- 3D tilt on cards ----------
+document.querySelectorAll('.type-card, .chart-col').forEach(card=>{
+  card.addEventListener('mousemove', (e)=>{
+    const r = card.getBoundingClientRect();
+    const x = (e.clientX - r.left) / r.width - 0.5;
+    const y = (e.clientY - r.top) / r.height - 0.5;
+    card.style.transform = `perspective(900px) rotateY(${x*7}deg) rotateX(${-y*7}deg) translateY(-6px)`;
+  });
+  card.addEventListener('mouseleave', ()=>{ card.style.transform = ''; });
+});
+
+// ---------- scroll reveal ----------
+const revealEls = document.querySelectorAll('.reveal');
+const io = new IntersectionObserver((entries)=>{
+  entries.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } });
+},{ threshold:0.15 });
+revealEls.forEach(el=>io.observe(el));
+
+// ---------- CHART SEQUENCE ANIMATION ----------
+const chartCols = document.querySelectorAll('#chartGrid .chart-col');
+const chartIO = new IntersectionObserver((entries)=>{
+  entries.forEach(entry=>{
+    if(entry.isIntersecting){
+      const col = entry.target;
+      const items = col.querySelectorAll('[data-step]');
+      items.forEach(item=>{
+        const step = parseInt(item.dataset.step);
+        setTimeout(()=>{ item.classList.add('in'); }, step * 220);
+      });
+      chartIO.unobserve(col);
+    }
+  });
+},{ threshold:0.25 });
+chartCols.forEach(col=>chartIO.observe(col));
+
+// ---------- QUIZ ----------
+const questions = [
+  {
+    q: "Victor Meyer's test is used to distinguish between which class of compounds?",
+    options: ["Aldehydes and ketones","Primary, secondary, and tertiary alcohols","Carboxylic acids and esters","Alkenes and alkynes"],
+    correct: 1,
+    explain: "The test uses a colour reaction to tell apart 1°, 2°, and 3° alcohols based on how many α-hydrogens survive after each is converted into a nitroalkane."
+  },
+  {
+    q: "What is the first reagent used to convert the alcohol into an alkyl halide?",
+    options: ["Conc. H₂SO₄","SOCl₂","Red P₄ + I₂","PCl₅"],
+    correct: 2,
+    explain: "Red phosphorus and iodine generate phosphorus triiodide (PI₃) in situ, which converts R–OH into R–I on heating."
+  },
+  {
+    q: "The alkyl halide is then treated with which reagent to form a nitroalkane?",
+    options: ["AgNO₃ (silver nitrate)","Alc. AgNO₂ (silver nitrite)","NaNO₂ / HCl","KCN"],
+    correct: 1,
+    explain: "Alcoholic silver nitrite reacts through its nitrogen atom (it's ambident), displacing the halide to give R–NO₂ rather than the isomeric alkyl nitrite."
+  },
+  {
+    q: "A primary alcohol turns blood red at the final step because it forms a:",
+    options: ["Pseudonitrol","Nitrolic acid","Nitrile","Nitroso-alcohol"],
+    correct: 1,
+    explain: "A primary nitroalkane has two α-H atoms. HNO₂ substitutes one to give a nitrolic acid, R–C(=NOH)–NO₂, which turns blood red with aqueous KOH."
+  },
+  {
+    q: "A secondary alcohol gives a blue colour with KOH because its final intermediate is a:",
+    options: ["Nitrolic acid","Nitrous acid ester","Pseudonitrol","Nitrone"],
+    correct: 2,
+    explain: "With only one α-H available, HNO₂ substitutes it directly on carbon, forming a pseudonitrol, R₂C(NO₂)(N=O), which turns blue with KOH."
+  },
+  {
+    q: "Why does a tertiary alcohol show 'no reaction' with HNO₂ and stay colourless?",
+    options: [
+      "It doesn't form an alkyl halide at all",
+      "AgNO₂ can't react with a tertiary halide",
+      "Its carbon has no α-hydrogen left for HNO₂ to substitute",
+      "KOH decomposes the tertiary nitro compound instantly"
+    ],
+    correct: 2,
+    explain: "The tertiary carbon is already bonded to three R groups, so after nitroalkane formation there's no α-H left for nitrous acid to act on — the reaction simply stops there."
+  }
+];
+
+let current = 0;
+let score = 0;
+let answered = false;
+
+const progressDots = document.getElementById('progressDots');
+const quizCard = document.getElementById('quizCard');
+
+function buildDots(){
+  progressDots.innerHTML = '';
+  questions.forEach((_,i)=>{
+    const d = document.createElement('div');
+    d.className = 'dot' + (i < current ? ' done' : i === current ? ' current' : '');
+    d.innerHTML = '<i></i>';
+    progressDots.appendChild(d);
+  });
+}
+
+function renderQuestion(){
+  answered = false;
+  buildDots();
+  const item = questions[current];
+  const letters = ['A','B','C','D'];
+  quizCard.innerHTML = `
+    <div class="q-count">QUESTION ${current+1} / ${questions.length}</div>
+    <div class="q-text">${item.q}</div>
+    <div class="options">
+      ${item.options.map((opt,i)=>`
+        <button class="opt" data-i="${i}">
+          <span class="letter">${letters[i]}</span>
+          <span>${opt}</span>
+        </button>`).join('')}
+    </div>
+    <div class="feedback" id="feedback"></div>
+    <div class="quiz-footer">
+      <span class="score-live">Score: ${score} / ${questions.length}</span>
+      <button class="next-btn" id="nextBtn">${current === questions.length-1 ? 'See results →' : 'Next question →'}</button>
+    </div>
+  `;
+
+  quizCard.querySelectorAll('.opt').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      if(answered) return;
+      answered = true;
+      const chosen = parseInt(btn.dataset.i);
+      const allOpts = quizCard.querySelectorAll('.opt');
+      allOpts.forEach(o=>o.classList.add('locked'));
+
+      if(chosen === item.correct){
+        btn.classList.add('correct');
+        score++;
+        launchConfetti();
+      } else {
+        btn.classList.add('wrong');
+        allOpts[item.correct].classList.add('correct');
+      }
+      allOpts.forEach((o,i)=>{ if(i!==chosen && i!==item.correct) o.classList.add('dim'); });
+
+      const fb = document.getElementById('feedback');
+      fb.className = 'feedback show ' + (chosen === item.correct ? 'good' : 'bad');
+      fb.textContent = (chosen === item.correct ? '✓ Correct — ' : '✕ Not quite — ') + item.explain;
+
+      document.getElementById('nextBtn').classList.add('show');
+      quizCard.querySelector('.score-live').textContent = `Score: ${score} / ${questions.length}`;
+    });
+  });
+
+  document.getElementById('nextBtn').addEventListener('click', ()=>{
+    if(current < questions.length - 1){
+      current++;
+      renderQuestion();
+    } else {
+      renderResults();
+    }
+  });
+}
+
+function renderResults(){
+  buildDots();
+  document.querySelectorAll('#progressDots .dot').forEach(d=>d.classList.add('done'));
+  const pct = Math.round((score/questions.length)*100);
+  let verdict = "Solid grasp of the mechanism.";
+  if(pct === 100) verdict = "Perfect — you could run this test in your sleep.";
+  else if(pct < 50) verdict = "Worth another pass through the chart above.";
+
+  quizCard.innerHTML = `
+    <div class="result-screen">
+      <div class="eyebrow" style="justify-content:center;">Quiz complete</div>
+      <div class="big-score">${score}<span style="font-size:1.6rem;color:var(--ink-soft);"> / ${questions.length}</span></div>
+      <p>${verdict}</p>
+      <button class="retry-btn" id="retryBtn">Retake the quiz</button>
+    </div>
+  `;
+  document.getElementById('retryBtn').addEventListener('click', ()=>{
+    current = 0; score = 0; renderQuestion();
+  });
+  if(pct >= 50) launchConfetti(28);
+}
+
+function launchConfetti(n=16){
+  const colors = ['#b23a2f','#2c5f8a','#c1861f','#8a8172'];
+  for(let i=0;i<n;i++){
+    const el = document.createElement('div');
+    el.className = 'confetti-piece';
+    const size = 5 + Math.random()*5;
+    el.style.width = size+'px';
+    el.style.height = (size*1.6)+'px';
+    el.style.left = (Math.random()*100)+'vw';
+    el.style.background = colors[Math.floor(Math.random()*colors.length)];
+    el.style.opacity = 0.9;
+    el.style.transform = `rotate(${Math.random()*360}deg)`;
+    document.body.appendChild(el);
+    const duration = 1800 + Math.random()*1400;
+    const drift = (Math.random()-0.5)*160;
+    el.animate([
+      { transform: el.style.transform + ' translate(0,0)', opacity:1 },
+      { transform: `rotate(${Math.random()*720}deg) translate(${drift}px, 100vh)`, opacity:0.9, offset:0.9 },
+      { transform: `rotate(${Math.random()*900}deg) translate(${drift}px, 108vh)`, opacity:0 }
+    ], { duration, easing:'cubic-bezier(.25,.46,.45,.94)' });
+    setTimeout(()=>el.remove(), duration+50);
+  }
+}
+
+renderQuestion();
+</script>
+
+</body>
+</html>
